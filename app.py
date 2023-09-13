@@ -1,8 +1,12 @@
 import requests
 from flask import Flask, request, Response, jsonify
 from bs4 import BeautifulSoup
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+
+# Apply CORS to your Flask app
+CORS(app, resources={r"/prelink/*": {"origins": "*"}})
 
 
 def generate_link_preview(url):
@@ -36,7 +40,6 @@ def generate_link_preview(url):
             'image_url': image_url,
             'url': url
         }
-
         return link_preview
 
     except Exception as e:
@@ -49,8 +52,11 @@ def compute(url):
     extra = request.args.get("extra")
     if extra:
         response["extra"] = extra
+    # Create a response object and set the Content-Type header to application/json
+    response = jsonify(generate_link_preview(url=url))
+    response.headers['Content-Type'] = 'application/json'
 
-    return jsonify(generate_link_preview(url=url)), 200
+    return response, 200
 
 
 @app.route("/")
@@ -61,7 +67,6 @@ def index():
 @app.route("/create-resonse", methods=["POST"])
 def create_response():
     data = request.get_json()
-
     return jsonify(data), 201
 
 
